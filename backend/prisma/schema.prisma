@@ -1,0 +1,148 @@
+// Prisma schema for KKARINZZZ cybersecurity portfolio
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  content     String   @default("")
+  category    String   @default("research")
+  featured    Boolean  @default(false)
+  published   Boolean  @default(false)
+  technologies String[] @default([])
+  tools       String[] @default([])
+  githubUrl   String?
+  demoUrl     String?
+  coverImage  String?
+  difficulty  String   @default("intermediate")
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([published])
+  @@index([featured])
+}
+
+model Writeup {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String
+  content     String   @default("")
+  category    String   @default("ctf")
+  difficulty  String   @default("medium")
+  tags        String[] @default([])
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([published])
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  description String   @default("")
+  proficiency Int      @default(70)
+  icon        String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([sortOrder])
+}
+
+model Certificate {
+  id          String   @id @default(cuid())
+  title       String
+  issuer      String
+  description String   @default("")
+  imageUrl    String?
+  url         String?
+  date        DateTime @default(now())
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model Achievement {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @default("")
+  date         DateTime
+  organization String   @default("")
+  type         String   @default("competition")
+  link         String?
+  image        String?
+  isPlaceholder Boolean @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  platform  String
+  url       String
+  username  String
+  icon      String   @default("")
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([read])
+}

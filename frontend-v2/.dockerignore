@@ -1,0 +1,8 @@
+# .dockerignore for frontend
+node_modules
+dist
+.env
+*.log
+.git
+.gitignore
+Dockerfile
