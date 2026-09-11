@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import rehypeHighlight from "rehype-highlight";
 import { ArrowLeft, List } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -140,7 +142,7 @@ export default function WriteupDetail() {
         <div className="markdown-body mt-8">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeHighlight]}
+            rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight]}
             components={{
               h2: ({ children }) => <h2 id={String(children).toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-")}>{children}</h2>,
               h3: ({ children }) => <h3 id={String(children).toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-")}>{children}</h3>,

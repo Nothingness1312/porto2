@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import rehypeHighlight from "rehype-highlight";
 import { ArrowLeft, ExternalLink, GitBranch, AlertTriangle } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -104,7 +106,7 @@ export default function ProjectDetail() {
 
       {/* Content */}
       <div className="markdown-body mt-8">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight]}>
           {project.content}
         </ReactMarkdown>
       </div>
