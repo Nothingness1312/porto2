@@ -26,6 +26,11 @@ INSERT INTO "SiteSetting" ("key", "value", "updatedAt") VALUES
   ('about_focus',          '"reverse eng."'::jsonb, NOW()),
   ('about_status',         '"open to work"'::jsonb, NOW()),
   ('about_timezone',       '"UTC+7 (WIB)"'::jsonb, NOW()),
+  ('about_language',       '"Python / C / JS"'::jsonb, NOW()),
+  ('about_os',             '"Arch / Kali"'::jsonb, NOW()),
+  ('about_editor',         '"Neovim"'::jsonb, NOW()),
+  ('about_coffee',         '"critical"'::jsonb, NOW()),
+  ('favicon_url',          '"/favicon.svg"'::jsonb, NOW()),
   ('contact_email',        '"kkarinzzz@protonmail.com"'::jsonb, NOW()),
   ('available_for_hire',   '"false"'::jsonb, NOW()),
   ('open_to_collaboration','"true"'::jsonb, NOW())

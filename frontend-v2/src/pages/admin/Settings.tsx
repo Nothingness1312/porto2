@@ -12,6 +12,8 @@ interface Row extends SiteSetting {
 const FIELD_GROUPS: { label: string; keys: string[] }[] = [
   { label: "hero", keys: ["site_subtitle", "site_tagline", "hero_description"] },
   { label: "about", keys: ["about_intro", "about_bio_1", "about_bio_2", "about_bio_3", "about_focus", "about_status", "about_timezone"] },
+  { label: "quick facts", keys: ["about_language", "about_os", "about_editor", "about_coffee"] },
+  { label: "branding", keys: ["favicon_url"] },
   { label: "contact / general", keys: ["contact_email", "open_to_collaboration"] },
 ];
 
@@ -27,7 +29,14 @@ export default function AdminSettings() {
     setLoading(true);
     settingsApi
       .list()
-      .then((data) => setRows(Array.isArray(data) ? data : []))
+      .then((data) => {
+        const declared = FIELD_GROUPS.flatMap((g) => g.keys);
+        const existing = new Set((Array.isArray(data) ? data : []).map((r) => r.key));
+        const placeholders: Row[] = declared
+          .filter((k) => !existing.has(k))
+          .map((k) => ({ id: "", key: k, value: "", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), _dirty: false }));
+        setRows([...(Array.isArray(data) ? data : []), ...placeholders]);
+      })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -46,7 +55,7 @@ export default function AdminSettings() {
     setSavingKey(key);
     setSavedFlash(null);
     try {
-      await settingsApi.update(key, row.value);
+      await settingsApi.upsert(key, row.value);
       setRows((rs) => rs.map((r) => (r.key === key ? { ...r, _dirty: false } : r)));
       setSavedFlash(key);
       setTimeout(() => setSavedFlash(null), 1800);

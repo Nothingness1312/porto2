@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { ScrollToTop } from "./components/ui/ScrollToTop";
+import { FaviconSync } from "./components/ui/FaviconSync";
 import LoadingScreen from "./components/ui/LoadingScreen";
 
 // Lazy-loaded pages (code splitting for performance)
@@ -47,6 +48,7 @@ export default function App() {
   return (
     <>
       {!isAdminRoute && <CommandPalette />}
+      <FaviconSync />
       <ScrollToTop />
       <Suspense fallback={<LoadingScreen />}>
         <Routes>

@@ -395,6 +395,14 @@ export const settingsApi = {
       .single();
     return run(res);
   },
+  upsert: async (key: string, value: unknown): Promise<SiteSetting> => {
+    const res = await supabase
+      .from("SiteSetting")
+      .upsert({ key, value, updatedAt: new Date().toISOString() }, { onConflict: '"key"' })
+      .select()
+      .single();
+    return run(res);
+  },
 };
 
 // --------------------------------------------------------------- messages

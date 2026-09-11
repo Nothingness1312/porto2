@@ -23,6 +23,13 @@ export default function About() {
   const real = achievements.filter((a) => !a.isPlaceholder);
   const placeholders = achievements.filter((a) => a.isPlaceholder);
 
+  const quickFacts = [
+    { label: "language", value: settings.about_language || "Python / C / JS" },
+    { label: "os", value: settings.about_os || "Arch / Kali" },
+    { label: "editor", value: settings.about_editor || "Neovim" },
+    { label: "coffee", value: settings.about_coffee || "critical" },
+  ];
+
   return (
     <div>
       {/* Header */}
@@ -77,22 +84,12 @@ export default function About() {
             <div className="card-editorial p-5">
               <p className="font-mono text-xs text-ink-faint">// quick_facts</p>
               <ul className="mt-4 space-y-3 font-mono text-sm">
-                <li className="flex justify-between gap-4">
-                  <span className="text-ink-faint">language</span>
-                  <span className="text-ink">Python / C / JS</span>
-                </li>
-                <li className="flex justify-between gap-4">
-                  <span className="text-ink-faint">os</span>
-                  <span className="text-ink">Arch / Kali</span>
-                </li>
-                <li className="flex justify-between gap-4">
-                  <span className="text-ink-faint">editor</span>
-                  <span className="text-ink">Neovim</span>
-                </li>
-                <li className="flex justify-between gap-4">
-                  <span className="text-ink-faint">coffee</span>
-                  <span className="text-ink">critical</span>
-                </li>
+                {quickFacts.map((f) => (
+                  <li key={f.label} className="flex justify-between gap-4">
+                    <span className="text-ink-faint">{f.label}</span>
+                    <span className="text-ink">{f.value}</span>
+                  </li>
+                ))}
               </ul>
             </div>
             <div className="border-2 border-dashed border-blaze/50 bg-blaze/5 p-5">
