@@ -269,6 +269,12 @@ export const certificatesApi = {
       .order('"date"', { ascending: false });
     return run(await q);
   },
+  get: async (id: string): Promise<Certificate> => {
+    const res = await supabase.from("Certificate").select("*").eq('"id"', id).maybeSingle();
+    if (res.error) fail(res.error);
+    if (!res.data) throw new ApiError("Certificate not found", 404);
+    return res.data;
+  },
   create: async (data: CertificateInput): Promise<Certificate> => {
     const res = await supabase
       .from("Certificate")

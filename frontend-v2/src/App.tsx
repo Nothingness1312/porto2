@@ -12,6 +12,7 @@ const ProjectDetail = lazy(() => import("./pages/public/ProjectDetail"));
 const Writeups = lazy(() => import("./pages/public/Writeups"));
 const WriteupDetail = lazy(() => import("./pages/public/WriteupDetail"));
 const CertificatesPage = lazy(() => import("./pages/public/CertificatesPage"));
+const CertificateDetail = lazy(() => import("./pages/public/CertificateDetail"));
 const Contact = lazy(() => import("./pages/public/Contact"));
 const NotFound = lazy(() => import("./pages/public/NotFound"));
 
@@ -58,6 +59,7 @@ export default function App() {
             <Route path="/writeups" element={<Writeups />} />
             <Route path="/writeups/:slug" element={<WriteupDetail />} />
             <Route path="/certificates" element={<CertificatesPage />} />
+            <Route path="/certificates/:id" element={<CertificateDetail />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Route>

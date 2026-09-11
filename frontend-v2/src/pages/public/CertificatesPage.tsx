@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, ExternalLink, Share2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, Share2 } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -9,6 +9,7 @@ import type { Certificate } from "@/types";
 
 export default function CertificatesPage() {
   usePageMeta("Certificates", "Certifications, credentials, and completed training.");
+  const nav = useNavigate();
   const [items, setItems] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -60,7 +61,7 @@ export default function CertificatesPage() {
         <SectionHeader
           annotation="// credentials"
           title="Credentials"
-          description="Each card links to the original certificate. Click to verify, or share."
+          description="Each card opens the full certificate view. Verify via the issuing authority from there."
         />
 
         {loading ? (
@@ -74,16 +75,14 @@ export default function CertificatesPage() {
             {items.map((c, i) => (
               <Reveal key={c.id} delay={i * 0.06}>
                 <div
-                  className={`card-editorial group flex h-full flex-col p-0 transition-transform hover:-translate-x-1 hover:-translate-y-1 ${
-                    c.url ? "cursor-pointer hover:shadow-hard-volt" : "hover:shadow-hard"
-                  }`}
-                  role={c.url ? "link" : undefined}
-                  tabIndex={c.url ? 0 : undefined}
-                  onClick={() => c.url && window.open(c.url, "_blank", "noopener,noreferrer")}
+                  className="card-editorial group flex h-full cursor-pointer flex-col p-0 transition-transform hover:-translate-x-1 hover:-translate-y-1 hover:shadow-hard-volt"
+                  role="link"
+                  tabIndex={0}
+                  onClick={() => nav(`/certificates/${c.id}`)}
                   onKeyDown={(e) => {
-                    if (c.url && (e.key === "Enter" || e.key === " ")) {
+                    if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      window.open(c.url, "_blank", "noopener,noreferrer");
+                      nav(`/certificates/${c.id}`);
                     }
                   }}
                 >
@@ -123,13 +122,9 @@ export default function CertificatesPage() {
                     )}
 
                     <div className="mt-auto flex items-center gap-2 pt-2">
-                      {c.url ? (
-                        <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-volt">
-                          verify credential <ExternalLink size={12} className="transition-transform group-hover:translate-x-0.5" />
-                        </span>
-                      ) : (
-                        <span className="font-mono text-xs text-ink-faint">no public link</span>
-                      )}
+                      <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-volt">
+                        view certificate <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                      </span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
