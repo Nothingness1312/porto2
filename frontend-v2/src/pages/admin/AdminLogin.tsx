@@ -1,16 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TerminalSquare } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useAuth } from "@/hooks/useAuth";
 import { authApi, ApiError } from "@/lib/api";
 
 export default function AdminLogin() {
   usePageMeta("Admin Login");
   const nav = useNavigate();
+  const { loading, signedIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!loading && signedIn) {
+      nav("/admin/dashboard", { replace: true });
+    }
+  }, [loading, signedIn, nav]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +37,8 @@ export default function AdminLogin() {
       setBusy(false);
     }
   };
+
+  if (loading || signedIn) return null;
 
   return (
     <div className="bg-grid-night flex min-h-screen items-center justify-center bg-night px-4">

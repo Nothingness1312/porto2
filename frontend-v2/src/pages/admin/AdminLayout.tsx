@@ -1,20 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { authApi } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 import { AdminNav, BackToSite } from "./_shared";
 
 export default function AdminLayout() {
   const nav = useNavigate();
-  const [ok, setOk] = useState<boolean | null>(null);
+  const { loading, signedIn } = useAuth();
 
   useEffect(() => {
-    authApi
-      .me()
-      .then(() => setOk(true))
-      .catch(() => nav("/admin/login", { replace: true }));
-  }, [nav]);
+    if (!loading && !signedIn) {
+      nav("/admin/login", { replace: true });
+    }
+  }, [loading, signedIn, nav]);
 
-  if (ok !== true) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-night">
         <p className="font-mono text-sm text-snow/60">
@@ -23,6 +22,8 @@ export default function AdminLayout() {
       </div>
     );
   }
+
+  if (!signedIn) return null;
 
   return (
     <div className="min-h-screen bg-paper">
