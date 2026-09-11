@@ -81,6 +81,15 @@ export default function AdminCertificates() {
     }
   };
 
+  const patch = (id: string, data: Partial<Certificate>, then?: () => void) =>
+    certificatesApi
+      .update(id, data)
+      .then(() => {
+        setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...data, _editing: false } : r)));
+        then?.();
+      })
+      .catch((err: Error) => setError(err.message));
+
   const inputCls =
     "w-full rounded-sm border-2 border-ink/20 bg-paper-bright px-3 py-1.5 font-mono text-xs text-ink focus:border-volt focus:outline-none";
 
@@ -131,7 +140,7 @@ export default function AdminCertificates() {
           <p className="py-10 text-center font-mono text-sm text-ink-faint">no certificates yet</p>
         )}
         {rows.map((r) => (
-          <div key={r.id} className="group flex items-start gap-3 border-2 border-ink/10 bg-paper-bright p-4 hover:border-ink/25">
+          <div key={r.id} id={`cert-${r.id}`} className="group flex items-start gap-3 border-2 border-ink/10 bg-paper-bright p-4 hover:border-ink/25">
             <div className="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden border-2 border-ink/15 bg-paper-dark">
               {r.imageUrl ? (
                 <img src={r.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
@@ -139,27 +148,74 @@ export default function AdminCertificates() {
                 <span className="font-mono text-xs font-bold text-ink-faint">NOIMG</span>
               )}
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <div>
-                  <span className="font-semibold text-ink">{r.title}</span>
-                  <span className="text-blaze"> @ {r.issuer}</span>
+
+            {r._editing ? (
+              <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <input defaultValue={r.title} data-k="title" className={inputCls} placeholder="title" />
+                <input defaultValue={r.issuer} data-k="issuer" className={inputCls} placeholder="issuer" />
+                <input defaultValue={r.date.slice(0, 10)} data-k="date" className={inputCls} placeholder="date (YYYY-MM-DD)" />
+                <input type="number" defaultValue={r.sortOrder} data-k="sortOrder" className={inputCls} placeholder="sort" />
+                <input defaultValue={r.imageUrl ?? ""} data-k="imageUrl" className={inputCls} placeholder="image url" />
+                <input defaultValue={r.url ?? ""} data-k="url" className={inputCls} placeholder="credential url" />
+                <textarea rows={2} defaultValue={r.description} data-k="description" className={`${inputCls} sm:col-span-2`} placeholder="description" />
+                <div className="flex gap-2 sm:col-span-2 lg:col-span-4">
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById(`cert-${r.id}`)!.parentElement!;
+                      const read = (k: string): string | number => {
+                        const input = el.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-k="${k}"]`)!;
+                        return k === "sortOrder" ? Number(input.value) : input.value;
+                      };
+                      patch(r.id, {
+                        title: String(read("title")).trim(),
+                        issuer: String(read("issuer")).trim(),
+                        date: String(read("date")),
+                        sortOrder: Number(read("sortOrder")),
+                        imageUrl: String(read("imageUrl")).trim() || null,
+                        url: String(read("url")).trim() || null,
+                        description: String(read("description")).trim(),
+                      });
+                    }}
+                    className="rounded-sm border-2 border-ink bg-ok px-3 py-1 text-xs font-semibold text-white"
+                  >
+                    save
+                  </button>
+                  <button
+                    onClick={() => setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, _editing: false } : x)))}
+                    className="rounded-sm border border-ink/20 px-3 py-1 text-xs text-ink-soft"
+                  >
+                    cancel
+                  </button>
                 </div>
-                <span className="font-mono text-[11px] text-ink-faint">
-                  {r.date ? r.date.slice(0, 10) : "no date"}
-                  {r.url && <span className="ml-2 tag-chip tag-chip-volt">linked</span>}
-                </span>
               </div>
-              {r.description && (
-                <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-soft">{r.description}</p>
-              )}
-              <p className="mt-1 font-mono text-[10px] text-ink-faint">sort: {r.sortOrder}</p>
-            </div>
-            <div className="flex shrink-0 gap-2">
-              <button onClick={() => setPendingDelete(r)} className="rounded-sm border border-ink/20 p-1.5 text-ink-soft hover:border-alert hover:text-alert" aria-label={`Delete ${r.title}`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4h8v2m1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6" /></svg>
-              </button>
-            </div>
+            ) : (
+              <>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div>
+                      <span className="font-semibold text-ink">{r.title}</span>
+                      <span className="text-blaze"> @ {r.issuer}</span>
+                    </div>
+                    <span className="font-mono text-[11px] text-ink-faint">
+                      {r.date ? r.date.slice(0, 10) : "no date"}
+                      {r.url && <span className="ml-2 tag-chip tag-chip-volt">linked</span>}
+                    </span>
+                  </div>
+                  {r.description && (
+                    <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-soft">{r.description}</p>
+                  )}
+                  <p className="mt-1 font-mono text-[10px] text-ink-faint">sort: {r.sortOrder}</p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <button onClick={() => setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, _editing: true } : x)))} className="rounded-sm border border-ink/20 px-3 py-1.5 text-xs text-ink-soft hover:border-volt hover:text-volt" aria-label={`Edit ${r.title}`}>
+                    edit
+                  </button>
+                  <button onClick={() => setPendingDelete(r)} className="rounded-sm border border-ink/20 p-1.5 text-ink-soft hover:border-alert hover:text-alert" aria-label={`Delete ${r.title}`}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4h8v2m1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6" /></svg>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>
