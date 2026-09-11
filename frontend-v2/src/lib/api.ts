@@ -36,13 +36,39 @@ export class ApiError extends Error {
 
 function fail(err: { message: string; code?: string }): never {
   const status =
-    err.code === "42501" ? 403 : err.code === "PGRST301" ? 401 : 500;
+    err.code === "42501" ? 403 : err.code === "PGRST301" ? 401 : err.code === "23505" ? 409 : 500;
   throw new ApiError(err.message, status);
 }
 
 async function run<T>(res: { data: T | null; error: { message: string; code?: string } | null }): Promise<T> {
   if (res.error) fail(res.error);
   return res.data as T;
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+async function uniqueSlug(table: "Project" | "Writeup", base: string, ignoreId?: string): Promise<string> {
+  if (!base) throw new ApiError("Could not derive a slug from title", 400);
+  let candidate = base;
+  let n = 2;
+  for (;;) {
+    const { data, error } = await supabase
+      .from(table)
+      .select("id")
+      .eq('"slug"', candidate);
+    if (error) fail(error);
+    const taken = (data ?? []).some((row) => row.id !== ignoreId);
+    if (!taken) return candidate;
+    candidate = `${base}-${n++}`;
+  }
 }
 
 // ------------------------------------------------------------- activity
@@ -109,9 +135,10 @@ export const projectsApi = {
     return res.data;
   },
   create: async (data: ProjectInput): Promise<Project> => {
+    const slug = await uniqueSlug("Project", data.slug?.trim() || slugify(data.title));
     const res = await supabase
       .from("Project")
-      .insert({ ...data, updatedAt: new Date().toISOString() })
+      .insert({ ...data, slug, updatedAt: new Date().toISOString() })
       .select()
       .single();
     const created = await run(res);
@@ -119,9 +146,10 @@ export const projectsApi = {
     return created;
   },
   update: async (id: string, data: Partial<ProjectInput>): Promise<Project> => {
+    const slug = data.slug?.trim() || (data.title ? slugify(data.title) : undefined);
     const res = await supabase
       .from("Project")
-      .update({ ...data, updatedAt: new Date().toISOString() })
+      .update({ ...data, ...(slug ? { slug: await uniqueSlug("Project", slug, id) } : {}), updatedAt: new Date().toISOString() })
       .eq('"id"', id)
       .select()
       .single();
@@ -159,9 +187,10 @@ export const writeupsApi = {
   },
   create: async (data: WriteupInput): Promise<Writeup> => {
     const now = new Date().toISOString();
+    const slug = await uniqueSlug("Writeup", data.slug?.trim() || slugify(data.title));
     const res = await supabase
       .from("Writeup")
-      .insert({ ...data, publishedAt: data.published ? now : null, updatedAt: now })
+      .insert({ ...data, slug, publishedAt: data.published ? now : null, updatedAt: now })
       .select()
       .single();
     const created = await run(res);
@@ -170,9 +199,10 @@ export const writeupsApi = {
   },
   update: async (id: string, data: Partial<WriteupInput>): Promise<Writeup> => {
     const now = new Date().toISOString();
+    const slug = data.slug?.trim() || (data.title ? slugify(data.title) : undefined);
     const res = await supabase
       .from("Writeup")
-      .update({ ...data, updatedAt: now, publishedAt: data.published === undefined ? undefined : data.published ? now : null })
+      .update({ ...data, ...(slug ? { slug: await uniqueSlug("Writeup", slug, id) } : {}), updatedAt: now, publishedAt: data.published === undefined ? undefined : data.published ? now : null })
       .eq('"id"', id)
       .select()
       .single();
