@@ -29,7 +29,7 @@ INSERT INTO "SiteSetting" ("key", "value", "updatedAt") VALUES
   ('about_language',       '"Python / C / JS"'::jsonb, NOW()),
   ('about_os',             '"Arch / Kali"'::jsonb, NOW()),
   ('about_editor',         '"Neovim"'::jsonb, NOW()),
-  ('about_coffee',         '"critical"'::jsonb, NOW()),
+  ('about_tea',            '"critical"'::jsonb, NOW()),
   ('favicon_url',          '"/favicon.svg"'::jsonb, NOW()),
   ('contact_email',        '"kkarinzzz@protonmail.com"'::jsonb, NOW()),
   ('available_for_hire',   '"false"'::jsonb, NOW()),

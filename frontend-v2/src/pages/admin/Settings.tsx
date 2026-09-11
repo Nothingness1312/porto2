@@ -12,7 +12,7 @@ interface Row extends SiteSetting {
 const FIELD_GROUPS: { label: string; keys: string[] }[] = [
   { label: "hero", keys: ["site_subtitle", "site_tagline", "hero_description"] },
   { label: "about", keys: ["about_intro", "about_bio_1", "about_bio_2", "about_bio_3", "about_focus", "about_status", "about_timezone"] },
-  { label: "quick facts", keys: ["about_language", "about_os", "about_editor", "about_coffee"] },
+  { label: "quick facts", keys: ["about_language", "about_os", "about_editor", "about_tea"] },
   { label: "branding", keys: ["favicon_url"] },
   { label: "contact / general", keys: ["contact_email", "open_to_collaboration"] },
 ];

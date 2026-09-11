@@ -27,7 +27,7 @@ export default function About() {
     { label: "language", value: settings.about_language || "Python / C / JS" },
     { label: "os", value: settings.about_os || "Arch / Kali" },
     { label: "editor", value: settings.about_editor || "Neovim" },
-    { label: "coffee", value: settings.about_coffee || "critical" },
+    { label: "tea", value: settings.about_tea || "critical" },
   ];
 
   return (
