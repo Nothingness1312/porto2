@@ -43,7 +43,16 @@ export default function AdminAchievements() {
   const create = async () => {
     if (!draft.title.trim()) return;
     try {
-      await achievementsApi.create({ ...draft, link: draft.link.trim() || null, image: draft.image.trim() || null });
+      await achievementsApi.create({
+        title: draft.title.trim(),
+        organization: draft.organization.trim(),
+        type: draft.type.trim() || "ctf",
+        date: draft.date || new Date().toISOString().slice(0, 10),
+        link: draft.link.trim() || null,
+        image: draft.image.trim() || null,
+        description: draft.description.trim(),
+        isPlaceholder: draft.isPlaceholder,
+      });
       setIsNewOpen(false);
       setDraft({ ...EMPTY });
       load();
