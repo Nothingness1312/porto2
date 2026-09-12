@@ -49,6 +49,7 @@ export default function WriteupDetail() {
   }, [slug]);
 
   const headings = writeup ? extractHeadings(writeup.content) : [];
+  const hasToC = headings.length > 0;
   const words = writeup ? writeup.content.split(/\s+/).length : 0;
   const mins = Math.max(1, Math.round(words / 180));
 
@@ -73,9 +74,13 @@ export default function WriteupDetail() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:grid lg:grid-cols-[240px_1fr] lg:gap-12">
+    <div
+      className={`mx-auto px-4 py-12 sm:px-6 ${
+        hasToC ? "max-w-6xl lg:grid lg:grid-cols-[240px_1fr] lg:gap-12" : "max-w-4xl"
+      }`}
+    >
       {/* ToC sidebar */}
-      {headings.length > 0 && (
+      {hasToC && (
         <aside className="hidden lg:block">
           <div className="sticky top-24 border-2 border-ink/15 bg-paper-bright p-4">
             <p className="flex items-center gap-2 font-mono text-xs font-bold text-ink">
@@ -124,7 +129,7 @@ export default function WriteupDetail() {
         </header>
 
         {/* Mobile ToC */}
-        {headings.length > 0 && (
+        {hasToC && (
           <details className="mt-5 border-2 border-ink/15 bg-paper-bright p-4 lg:hidden">
             <summary className="cursor-pointer font-mono text-xs font-bold text-ink">
               on this page ({headings.length})
