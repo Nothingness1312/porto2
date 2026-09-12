@@ -73,6 +73,15 @@ export default function AdminAchievements() {
     }
   };
 
+  const patch = (id: string, data: Partial<Achievement>, then?: () => void) =>
+    achievementsApi
+      .update(id, data)
+      .then(() => {
+        setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...data, _editing: false } : r)));
+        then?.();
+      })
+      .catch((err: Error) => setError(err.message));
+
   const inputCls =
     "w-full rounded-sm border-2 border-ink/20 bg-paper-bright px-3 py-1.5 font-mono text-xs text-ink focus:border-volt focus:outline-none";
 
@@ -126,21 +135,74 @@ export default function AdminAchievements() {
           <p className="py-10 text-center font-mono text-sm text-ink-faint">no achievements yet</p>
         )}
         {rows.map((r) => (
-          <div key={r.id} className={`flex flex-wrap items-center gap-3 border-2 p-4 ${r.isPlaceholder ? "border-dashed border-ink/20" : "border-ink/15 bg-paper-bright"}`}>
-            <span className="tag-chip tag-chip-volt w-24 shrink-0">{r.type}</span>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-ink">
-                {r.title}
-                {r.isPlaceholder && <span className="ml-2 tag-chip border-citron/40 bg-citron/10 text-citron">placeholder</span>}
-              </p>
-              <p className="truncate text-xs text-ink-faint">
-                {r.organization} · {r.date.slice(0, 7)}
-                {r.link && <span className="ml-2 text-volt">proof ↗</span>}
-              </p>
-            </div>
-            <button onClick={() => setPendingDelete(r)} className="rounded-sm border border-ink/20 p-1.5 text-ink-soft hover:border-alert hover:text-alert" aria-label={`Delete ${r.title}`}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4h8v2m1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6" /></svg>
-            </button>
+          <div key={r.id} id={`ach-${r.id}`} className={`flex flex-wrap items-center gap-3 border-2 p-4 ${r.isPlaceholder ? "border-dashed border-ink/20" : "border-ink/15 bg-paper-bright"}`}>
+            {r._editing ? (
+              <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <input defaultValue={r.title} data-k="title" className={inputCls} placeholder="title" />
+                <input defaultValue={r.organization} data-k="organization" className={inputCls} placeholder="organization" />
+                <input defaultValue={r.type} data-k="type" className={inputCls} placeholder="type (ctf / cert / cve ...)" />
+                <input defaultValue={r.date.slice(0, 10)} data-k="date" className={inputCls} placeholder="date (YYYY-MM-DD)" />
+                <input defaultValue={r.link ?? ""} data-k="link" className={inputCls} placeholder="proof link (optional)" />
+                <input defaultValue={r.image ?? ""} data-k="image" className={inputCls} placeholder="image url (optional)" />
+                <textarea rows={2} defaultValue={r.description} data-k="description" className={`${inputCls} sm:col-span-2`} placeholder="description" />
+                <label className="flex items-center gap-2 font-mono text-xs text-ink-soft sm:col-span-2 lg:col-span-4">
+                  <input type="checkbox" defaultChecked={r.isPlaceholder} data-k="isPlaceholder" className="h-4 w-4 accent-citron" />
+                  placeholder
+                </label>
+                <div className="flex gap-2 sm:col-span-2 lg:col-span-4">
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById(`ach-${r.id}`)!;
+                      const read = (k: string): string | boolean | number => {
+                        const input = el.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-k="${k}"]`)!;
+                        return input instanceof HTMLInputElement && input.type === "checkbox" ? input.checked : input.value;
+                      };
+                      patch(r.id, {
+                        title: String(read("title")).trim(),
+                        organization: String(read("organization")).trim(),
+                        type: String(read("type")).trim() || "ctf",
+                        date: String(read("date")),
+                        link: String(read("link")).trim() || null,
+                        image: String(read("image")).trim() || null,
+                        description: String(read("description")).trim(),
+                        isPlaceholder: Boolean(read("isPlaceholder")),
+                      });
+                    }}
+                    className="rounded-sm border-2 border-ink bg-ok px-3 py-1 text-xs font-semibold text-white"
+                  >
+                    save
+                  </button>
+                  <button
+                    onClick={() => setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, _editing: false } : x)))}
+                    className="rounded-sm border border-ink/20 px-3 py-1 text-xs text-ink-soft"
+                  >
+                    cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <span className="tag-chip tag-chip-volt w-24 shrink-0">{r.type}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-ink">
+                    {r.title}
+                    {r.isPlaceholder && <span className="ml-2 tag-chip border-citron/40 bg-citron/10 text-citron">placeholder</span>}
+                  </p>
+                  <p className="truncate text-xs text-ink-faint">
+                    {r.organization} · {r.date.slice(0, 7)}
+                    {r.link && <span className="ml-2 text-volt">proof ↗</span>}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, _editing: true } : x)))} className="rounded-sm border border-ink/20 px-3 py-1.5 text-xs text-ink-soft hover:border-volt hover:text-volt" aria-label={`Edit ${r.title}`}>
+                    edit
+                  </button>
+                  <button onClick={() => setPendingDelete(r)} className="rounded-sm border border-ink/20 p-1.5 text-ink-soft hover:border-alert hover:text-alert" aria-label={`Delete ${r.title}`}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4h8v2m1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6" /></svg>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>
